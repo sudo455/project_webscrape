@@ -1,26 +1,52 @@
 """
 TODO: Impliment a web scraping tool with Beautiful Soup or Scrapy and output them to json or csv
-site: 
-
+site: glipse peos
 """
-from bs4 import BeautifulSoup   
-import requests
+try: # try to see if all the needed libraries are installed
+	from selenium import webdriver
+	from selenium.webdriver.common.by import By
+	import time
+	from selenium.common.exceptions import NoSuchElementException
+	import pandas as pd
+except ImportError:
+  print("Error: Some or one library is not installed. Please install them using pip:\n pip install -r requirements.txt")
+  exit(ImportError())
 
-user_search = input("Give me what to search: ").replace(" ", "+")
+page_to_scrape = webdriver.Firefox()
+page_to_scrape.get("http://quotes.toscrape.com")
 
-search_engine = 'https://www.amazon.com/s?url=search-alias%253Daps&field-keywords=' + user_search
+page_to_scrape.find_element(By.LINK_TEXT, "Login").click()
 
-headers = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:66.0) Gecko/20100101 Firefox/66.0", "Accept-Encoding":"gzip, deflate", "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", "DNT":"1","Connection":"close", "Upgrade-Insecure-Requests":"1"}
-data = requests.get(search_engine,headers=headers)
-if data.status_code != 200:
-    print("something is wrong with the site or the internet error code: ", data.status_code)
-    exit()
+time.sleep(2)
+page_to_scrape.find_element(By.ID, "username").send_keys("admin")
+page_to_scrape.find_element(By.ID, "password").send_keys("test")
 
-print("amazon status code:", data.status_code)
-soup = BeautifulSoup(data.content, 'html.parser')
+page_to_scrape.find_element(By.CSS_SELECTOR, "input.btn-primary").click()
 
-file = open("soup_data.html", "w+")
+data_frame = pd.DataFrame(columns=["QUOTES", "AUTHORS"])
+page = 1
 
-file.write(str(soup))
+while True:
 
-file.close
+	print(f"Page: {page} scraping...", )
+
+	quotes = page_to_scrape.find_elements(By.CLASS_NAME, "text")
+	authors = page_to_scrape.find_elements(By.CLASS_NAME, "author")
+
+	for quote, author in zip(quotes, authors) :
+		data_frame_lengh = len(data_frame)
+		q = quote.text.strip("“").strip("”").strip('"')
+		q = f"{q}"
+		data_frame.loc[data_frame_lengh] = [q, author.text]
+
+	print("done.\n")
+	try:
+		page_to_scrape.find_element(By.PARTIAL_LINK_TEXT, "Next").click()
+		page += 1
+
+	except NoSuchElementException:
+		print("End of site")
+		break
+data_frame.index += 1
+
+data_frame.to_csv(r'out.csv')

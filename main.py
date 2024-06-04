@@ -1,6 +1,7 @@
 """
 TODO: Impliment a web scraping tool with Beautiful Soup or Scrapy and output them to json or csv
-site: glipse peos
+site : quotes.toscrape.com
+site : books.toscrape.com
 """
 try: # try to see if all the needed libraries are installed
 	from selenium import webdriver

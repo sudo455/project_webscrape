@@ -2,16 +2,27 @@ try: # try to see if all the needed libraries are installed
 	from selenium import webdriver
 	from selenium.webdriver.common.by import By
 	import time
-	from selenium.common.exceptions import NoSuchElementException
+	from selenium.common.exceptions import NoSuchElementException, WebDriverException
 	import pandas as pd
 except ImportError:
-  print("Error: Some or one library is not installed. Please install them using pip:\n pip install -r requirements.txt")
+  print("""Error: Some or one library is not installed.
+Make sure you are in an activated python virtual environment using the command:
+	python -m venv venv
+to activate a python virtual environment look at: 
+https://python.land/virtual-environments/virtualenv#Python_venv_activation
+
+Lastly install the libraries using pip:
+	pip install -r requirements.txt""")
   exit()
 
-#initialise web drivers
-driver_gbp_to_euro = webdriver.Firefox()
-driver_quotes = webdriver.Firefox()
-driver_books = webdriver.Firefox()
+# try to initialise web drivers
+try:
+	driver_quotes = webdriver.Firefox()
+	driver_books = webdriver.Firefox()
+	driver_gbp_to_euro = webdriver.Firefox()
+except WebDriverException:
+  print("Make sure to have Firefox installed with default installation path.")
+  exit()
 
 driver_gbp_to_euro.get("https://www.exchange-rates.org/converter/gbp-eur")  # live british pount to euro convertion website
 
@@ -36,30 +47,30 @@ driver_quotes.find_element(By.CSS_SELECTOR, "input.btn-primary").click()
 ##########################################################################
 
 data_frame_quotes = pd.DataFrame(columns=["QUOTES", "AUTHORS"]) # dataframe for quotes
-page_quotes_to_scrape = 1 # for user output 
-
-
 data_frame_books = pd.DataFrame(columns=["Title", "Star rating", "Price", "Stock availability"]) # dataframe for the books
+
+page_quotes_to_scrape = 1 # for user output 
 page_books_to_scrape = 1 # for user output 
 ############################################################
 # block to scrape the site: http://quotes.toscrape.com
 while True:
 
-	print(f"Page: {page_quotes_to_scrape} scraping...", )
+	print(f"Quotes Page: {page_quotes_to_scrape} scraping...", )
 
-	quotes = driver_quotes.find_elements(By.CLASS_NAME, "text")
-	authors = driver_quotes.find_elements(By.CLASS_NAME, "author")
+	quotes = driver_quotes.find_elements(By.CLASS_NAME, "text") # get the quotes
+	authors = driver_quotes.find_elements(By.CLASS_NAME, "author") # get the authors
 
 	for quote, author in zip(quotes, authors) :
-		data_frame_lengh_quotes = len(data_frame_quotes)
+		data_frame_lengh_quotes = len(data_frame_quotes) # get the leaght of the data frame
 		q = quote.text.strip("“").strip("”").strip('"')
 		q = f"{q}"
-		data_frame_quotes.loc[data_frame_lengh_quotes] = [q, author.text]
+
+		data_frame_quotes.loc[data_frame_lengh_quotes] = [q, author.text] # add data to data frame in the end of it
 
 	print("done.\n")
 
 	try:
-		driver_quotes.find_element(By.PARTIAL_LINK_TEXT, "Next").click()
+		driver_quotes.find_element(By.PARTIAL_LINK_TEXT, "Next").click() # check the next button if it is there or not
 		page_quotes_to_scrape += 1
 
 	except NoSuchElementException:
@@ -72,27 +83,27 @@ while True:
 # block to scrape the site: https://books.toscrape.com
 
 while True:
-  products = driver_books.find_elements(By.CSS_SELECTOR, 'article.product_pod')
-  print(f"Page: {page_books_to_scrape} scraping...", )
+  products = driver_books.find_elements(By.CSS_SELECTOR, 'article.product_pod') # get all the data of each product pod (books) for the page
+  print(f"Books Page: {page_books_to_scrape} scraping...", )
 
   for product in products:
-    data_frame_books_lengh = len(data_frame_books)
+    data_frame_books_lengh = len(data_frame_books) # get the leaght of the data frame
 
-    title = product.find_element(By.TAG_NAME, 'h3').find_element(By.TAG_NAME, 'a').get_property('title')
-    star_rating = product.find_element(By.CSS_SELECTOR, 'p.star-rating').get_dom_attribute('class').replace('star-rating ', '')
-    price = product.find_element(By.CSS_SELECTOR, 'p.price_color').text
-    in_stock = driver_books.find_element(By.CSS_SELECTOR, 'div.product_price').find_element(By.CSS_SELECTOR,'p.instock.availability').text
+    title = product.find_element(By.TAG_NAME, 'h3').find_element(By.TAG_NAME, 'a').get_property('title') # get the title
+    star_rating = product.find_element(By.CSS_SELECTOR, 'p.star-rating').get_dom_attribute('class').replace('star-rating ', '') # get the star rating in text
+    price = product.find_element(By.CSS_SELECTOR, 'p.price_color').text # get the price
+    in_stock = driver_books.find_element(By.CSS_SELECTOR, 'div.product_price').find_element(By.CSS_SELECTOR,'p.instock.availability').text # get the stock availability
 
-    _, value_in_gbp = price.split("£")
-    price = str(float(value_in_gbp) * float(gbp_euro))  + "€"
+    _, value_in_gbp = price.split("£") # split the gbp symbol and the number in gbp 
+    price = str(float(value_in_gbp) * float(gbp_euro))  + "€" # converion to euro
 
-    data_frame_books.loc[data_frame_books_lengh] = [title, star_rating, price, in_stock]
+    data_frame_books.loc[data_frame_books_lengh] = [title, star_rating, price, in_stock] # add data to data frame in the end of it
 
-  
+
   print("done.\n")
   
   try:
-    next_click = driver_books.find_element(By.PARTIAL_LINK_TEXT, "next").click()
+    next_click = driver_books.find_element(By.PARTIAL_LINK_TEXT, "next").click() # check the next button if it is there or not
     page_books_to_scrape += 1
 
   except NoSuchElementException:

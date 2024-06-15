@@ -48,7 +48,7 @@ driver_quotes.find_element(By.CSS_SELECTOR, "input.btn-primary").click()
 ##########################################################################
 
 data_frame_quotes = pd.DataFrame(columns=["QUOTES", "AUTHORS"]) # dataframe for quotes
-data_frame_books = pd.DataFrame(columns=["Title", "Star rating", "Price", "Stock availability", "book link"]) # dataframe for the books
+data_frame_books = pd.DataFrame(columns=["Title", "Star rating", "Price", "Stock availability", "image link", "book link"]) # dataframe for the books
 
 page_quotes_to_scrape = 1 # for user output 
 page_books_to_scrape = 1 # for user output 
@@ -93,13 +93,14 @@ while True:
     star_rating = product.find_element(By.CSS_SELECTOR, 'p.star-rating').get_dom_attribute('class').replace('star-rating ', '') # get the star rating in text
     price = product.find_element(By.CSS_SELECTOR, 'p.price_color').text # get the price
     in_stock = product.find_element(By.CSS_SELECTOR, 'div.product_price').find_element(By.CSS_SELECTOR,'p.instock.availability').text # get the stock availability
+    thumbnail_link = product.find_element(By.XPATH, 'div[1]/a/img').get_attribute('src')# get the thumbnail link
     book_link = product.find_element(By.TAG_NAME, 'h3').find_element(By.TAG_NAME, 'a').get_property('href') # get the book link
 #html.no-js.asznwyfn.idc0_350 body#default.default div.container-fluid.page div.page_inner ul.breadcrumb li a
 
     _, value_in_gbp = price.split("£") # split the gbp symbol and the number in gbp 
     price = str(float(value_in_gbp) * float(gbp_euro))  + "€" # converion to euro
 
-    data_frame_books.loc[data_frame_books_lengh] = [title, star_rating, price, in_stock, book_link] # add data to data frame in the end of it
+    data_frame_books.loc[data_frame_books_lengh] = [title, star_rating, price, in_stock, thumbnail_link, book_link] # add data to data frame in the end of it
 
 
   print("done.\n")

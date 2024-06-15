@@ -124,5 +124,5 @@ print(data_frame_quotes)
 print(data_frame_books)
 
 # write the output to 2 .csv files
-data_frame_quotes.to_csv(r'out.csv')
-data_frame_books.to_csv(r'out2.csv')
+data_frame_quotes.to_csv(r'quotes.csv')
+data_frame_books.to_csv(r'books.csv')

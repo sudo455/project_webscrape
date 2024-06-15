@@ -95,7 +95,6 @@ while True:
     in_stock = product.find_element(By.CSS_SELECTOR, 'div.product_price').find_element(By.CSS_SELECTOR,'p.instock.availability').text # get the stock availability
     thumbnail_link = product.find_element(By.XPATH, 'div[1]/a/img').get_attribute('src')# get the thumbnail link
     book_link = product.find_element(By.TAG_NAME, 'h3').find_element(By.TAG_NAME, 'a').get_property('href') # get the book link
-#html.no-js.asznwyfn.idc0_350 body#default.default div.container-fluid.page div.page_inner ul.breadcrumb li a
 
     _, value_in_gbp = price.split("£") # split the gbp symbol and the number in gbp 
     price = str(float(value_in_gbp) * float(gbp_euro))  + "€" # converion to euro

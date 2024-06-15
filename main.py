@@ -11,7 +11,7 @@ Make sure you are in an activated python virtual environment using the command:
 to activate a python virtual environment look at: 
 https://python.land/virtual-environments/virtualenv#Python_venv_activation
 
-Lastly install the libraries using pip:
+Lastly install the libraries using pip inside the virtual python environment:
 	pip install -r requirements.txt""")
   exit()
 
